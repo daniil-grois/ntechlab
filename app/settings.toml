@@ -1,0 +1,7 @@
+[development.db_config]
+DB_HOST = 'localhost'
+DB_PORT = 5432
+DB_USER = 'admin'
+DB_NAME = 'user_search'
+DB_PASS = 1234
+DB_ENGINE_CONSTANT = "db_engine"
