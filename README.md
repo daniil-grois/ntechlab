@@ -36,7 +36,9 @@ stmt = sa.select(
 
 ```
 <br/>
+
 ![ntechlab](./assets/all_users_in_square.png "ntechlab")
+
 <br/>
 В этом же запросе к базе я рассчитываю гипотенузу, для каждого пользователя,
 ведь гипотенуза является расстоянием пользователя до его соседа.
@@ -49,8 +51,9 @@ all_sorted_users_in_circle = sorted(all_users_in_circle, key=lambda user: user.h
 
 Тем самым получая всех близлежайших соседей к пользователю в необходимом радиусе. 
 <br/>
+
 ![ntechlab](./assets/all_users_in_circle.png "ntechlab")
-<br/>
+
 ## Технологический стек
 - aiohttp
 - aiohttp-swagger
