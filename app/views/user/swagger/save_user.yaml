@@ -1,0 +1,39 @@
+tags:
+  - user
+summary: create user
+description:
+  This end-point save new user from db.
+produces:
+  - application/json
+
+parameters:
+  - in: body
+    description: Create new user.
+    required: true
+    name: data
+    schema:
+      type: object
+      properties:
+        username:
+          type: string
+          format: int64
+          description: username
+          example: "John Cina"
+        x:
+          type: number
+          description: Conc Block id
+          example: 1.111
+        y:
+          type: number
+          description: Conc Block New Name
+          example: 2.222
+
+responses:
+  "201":
+    description: Created
+  "405":
+    description: Method not allowed
+  "422":
+    description: return json object errors data
+  "500":
+    description: return text - "Error text"

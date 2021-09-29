@@ -1,0 +1,11 @@
+tags:
+  - healthcheck
+summary: healthcheck
+description:
+  This end-point allow to test that service is up.
+
+responses:
+  "200":
+    description: return text - "pong"
+  "405":
+    description: Method not allowed

@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, List
 
 from aiopg.sa.result import RowProxy
 import aiopg.sa.connection as aiopg_conn
@@ -11,12 +11,25 @@ from services.db.models import UserTable
 async def get_user_coordinates(
     conn: aiopg_conn.SAConnection,
     user_id: int,
-) -> Optional[Tuple[float]]:
+) -> Optional[RowProxy]:
     stmt = sa.select(UserTable.c.x, UserTable.c.y).where(UserTable.c.id == user_id)
     result = await conn.execute(stmt)
     re_fetchone = await result.fetchone()
-    # TODO добавить условие
-    return re_fetchone[0], re_fetchone[1]
+
+    if re_fetchone:
+        return re_fetchone
+
+
+async def get_user_query(
+    conn: aiopg_conn.SAConnection,
+    user_id: int,
+) -> Optional[RowProxy]:
+    stmt = sa.select(UserTable).where(UserTable.c.id == user_id)
+    result = await conn.execute(stmt)
+    re_fetchone = await result.fetchone()
+
+    if re_fetchone:
+        return re_fetchone
 
 
 async def get_users_inside_square(
@@ -26,29 +39,27 @@ async def get_users_inside_square(
     y: float,
     radius: float,
     limit: int
-):
-    """"""
+) -> List[RowProxy]:
+
     stmt = sa.select(
         UserTable, func.sqrt(
             func.pow(UserTable.c.x, 2) + func.pow(UserTable.c.y, 2)
         ).label("hypotenuse")
     ).where(
-            sa.and_(
-                sa.between(UserTable.c.x, x - radius, x + radius),
-                sa.between(UserTable.c.y, y - radius, y + radius),
-                UserTable.c.id != user_id
-            )
+        sa.and_(
+            sa.between(UserTable.c.x, x - radius, x + radius),
+            sa.between(UserTable.c.y, y - radius, y + radius),
+            UserTable.c.id != user_id
+        )
     ).limit(limit)
 
     result = await conn.execute(stmt)
-
     re_fetchall = await result.fetchall()
 
     return re_fetchall
 
 
-
-async def save_user(
+async def save_user_query(
     conn: aiopg_conn.SAConnection,
     username: str,
     x: float,
@@ -58,9 +69,46 @@ async def save_user(
     await conn.execute(stmt)
 
 
-async def delete_user(
+async def delete_user_query(
     conn: aiopg_conn.SAConnection,
     user_id: int
 ) -> None:
     stmt = UserTable.delete().where(UserTable.c.id == user_id)
     await conn.execute(stmt)
+
+
+async def check_user_duplicate_coordinates(
+    conn: aiopg_conn.SAConnection,
+    x: float,
+    y: float
+) -> bool:
+    stmt = sa.select([sa.exists().where(sa.and_(UserTable.c.x == x, UserTable.c.y == y))])
+
+    result = await conn.execute(stmt)
+    re_fetchone = await result.fetchone()
+
+    return re_fetchone[0]
+
+
+async def check_user_duplicate_username(
+    conn: aiopg_conn.SAConnection,
+    username: str,
+) -> bool:
+    stmt = sa.select([sa.exists().where(UserTable.c.name == username)])
+
+    result = await conn.execute(stmt)
+    re_fetchone = await result.fetchone()
+
+    return re_fetchone[0]
+
+
+async def user_exists_query(
+    conn: aiopg_conn.SAConnection,
+    user_id: int,
+) -> bool:
+    stmt = sa.select([sa.exists().where(UserTable.c.id == user_id)])
+
+    result = await conn.execute(stmt)
+    re_fetchone = await result.fetchone()
+
+    return re_fetchone[0]

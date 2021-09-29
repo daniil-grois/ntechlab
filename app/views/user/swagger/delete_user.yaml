@@ -1,0 +1,23 @@
+tags:
+  - user
+summary: delete user
+description:
+  Delete existing user from db
+produces:
+  - application/json
+
+parameters:
+  - in: path
+    name: user_id
+    schema:
+      type: integer
+    required: true
+    description: Numeric ID of the user to delete
+
+responses:
+  "204":
+    description: No Content
+  "404":
+    description: return text - "Пользователь не найден."
+  "405":
+    description: Method not allowed

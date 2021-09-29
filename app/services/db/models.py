@@ -13,8 +13,5 @@ class User(Base):
     x = Column(Float, default=False)
     y = Column(Float, default=False)
 
-    def as_dict(self):
-        print(self.__table__.columns)
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 UserTable = User.__table__

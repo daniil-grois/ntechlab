@@ -1,0 +1,37 @@
+tags:
+  - user
+summary: get user neighbors
+description:
+  Get the neighbors of an existing user
+produces:
+  - application/json
+
+parameters:
+  - in: path
+    name: user_id
+    schema:
+      type: integer
+    required: true
+    description: Numeric ID of the user to get
+  - in: query
+    name: radius
+    schema:
+      type: number
+    required: true
+    description: Neighbor search radius
+  - in: query
+    name: limit
+    schema:
+      type: integer
+    required: true
+    description: Number of displayed neighbors
+
+responses:
+  "200":
+    description: return json object neighbors data
+  "422":
+    description: return json object errors data
+  "404":
+    description: return text - "Пользователь не найден."
+  "405":
+    description: Method not allowed
