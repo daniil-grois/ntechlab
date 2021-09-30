@@ -1,4 +1,4 @@
-from aiohttp.web_exceptions import HTTPServerError, HTTPNotFound
+from aiohttp.web_exceptions import HTTPNotFound, HTTPServerError
 
 
 class UserDuplicateCoordinatesError(HTTPServerError):
@@ -23,4 +23,3 @@ class UserDoesNotExistError(HTTPNotFound):
 
     def __init__(self, text=text):
         super(UserDoesNotExistError, self).__init__(text=text)
-

@@ -1,30 +1,36 @@
 import logging
 from logging.config import fileConfig
+from pathlib import Path
 
 from alembic import context
 from dynaconf import Dynaconf, Validator
 from sqlalchemy import engine_from_config, pool
 
-from services.db import models
+from app.services.db import models
 
 
 # LOGGER
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 # CORE SETTINGS
 settings = Dynaconf(
     envvar_prefix=False,
     validators=[
         # DATABASE
-        Validator('DB_CONFIG.DB_HOST', 'DB_CONFIG.DB_NAME', 'DB_CONFIG.DB_USER',
-                  must_exist=True, is_type_of=str),
-        Validator('DB_CONFIG.DB_PORT', must_exist=True, is_type_of=int),
-        Validator('DB_CONFIG.DB_PASS', must_exist=True, is_type_of=str) |
-        Validator('DB_CONFIG.DB_PASS', must_exist=True, is_type_of=int),
+        Validator(
+            "DB_CONFIG.DB_HOST",
+            "DB_CONFIG.DB_NAME",
+            "DB_CONFIG.DB_USER",
+            must_exist=True,
+            is_type_of=str,
+        ),
+        Validator("DB_CONFIG.DB_PORT", must_exist=True, is_type_of=int),
+        Validator("DB_CONFIG.DB_PASS", must_exist=True, is_type_of=str)
+        | Validator("DB_CONFIG.DB_PASS", must_exist=True, is_type_of=int),
     ],
     environments=True,
-    settings_files=['settings.toml', '.secrets.toml'],
+    settings_files=["settings.toml"],
 )
 
 
@@ -38,8 +44,8 @@ DB_PASS = settings.DB_CONFIG.DB_PASS
 config = context.config
 
 config.set_main_option(
-    'sqlalchemy.url',
-    f'postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}')
+    "sqlalchemy.url", f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
+)
 
 # Interpret the config file for Python logging.
 fileConfig(config.config_file_name)
@@ -86,9 +92,7 @@ def run_migrations_online():
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

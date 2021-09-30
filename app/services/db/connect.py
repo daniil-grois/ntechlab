@@ -1,6 +1,6 @@
 from aiopg.sa import create_engine
 
-from config import settings, logger
+from app.config import logger, settings
 
 
 async def db_pg_engine(app):
@@ -9,7 +9,8 @@ async def db_pg_engine(app):
         port=settings.DB_CONFIG.DB_PORT,
         database=settings.DB_CONFIG.DB_NAME,
         user=settings.DB_CONFIG.DB_USER,
-        password=settings.DB_CONFIG.DB_PASS)
+        password=settings.DB_CONFIG.DB_PASS,
+    )
 
     """Положим соединение с базой в экземпляр приложения чтобы иметь прямой доступ к базе из любой view"""
     app[settings.DB_CONFIG.DB_ENGINE_CONSTANT] = engine

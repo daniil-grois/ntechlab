@@ -1,11 +1,12 @@
-from typing import Optional, List
+from typing import List, Optional
 
-from aiopg.sa.result import RowProxy
 import aiopg.sa.connection as aiopg_conn
 import sqlalchemy as sa
+from aiopg.sa.result import RowProxy
 from sqlalchemy import func
 
-from services.db.models import UserTable
+from app.services.db.models import UserTable
+from app.views.user.dataclasses import NeighborsSearchParameters, Coordinates
 
 
 async def get_user_coordinates(
@@ -34,24 +35,33 @@ async def get_user_query(
 
 async def get_users_inside_square(
     conn: aiopg_conn.SAConnection,
-    user_id: int,
-    x: float,
-    y: float,
-    radius: float,
-    limit: int
+    sp: NeighborsSearchParameters,
 ) -> List[RowProxy]:
 
-    stmt = sa.select(
-        UserTable, func.sqrt(
-            func.pow(UserTable.c.x, 2) + func.pow(UserTable.c.y, 2)
-        ).label("hypotenuse")
-    ).where(
-        sa.and_(
-            sa.between(UserTable.c.x, x - radius, x + radius),
-            sa.between(UserTable.c.y, y - radius, y + radius),
-            UserTable.c.id != user_id
+    stmt = (
+        sa.select(
+            UserTable,
+            func.sqrt(func.pow(UserTable.c.x, 2) + func.pow(UserTable.c.y, 2)).label(
+                "hypotenuse"
+            ),
         )
-    ).limit(limit)
+        .where(
+            sa.and_(
+                sa.between(
+                    UserTable.c.x,
+                    sp.user_coordinates.x - sp.radius,
+                    sp.user_coordinates.x + sp.radius,
+                ),
+                sa.between(
+                    UserTable.c.y,
+                    sp.user_coordinates.y - sp.radius,
+                    sp.user_coordinates.y + sp.radius,
+                ),
+                UserTable.c.id != sp.user_id,
+            )
+        )
+        .limit(sp.limit)
+    )
 
     result = await conn.execute(stmt)
     re_fetchall = await result.fetchall()
@@ -60,30 +70,25 @@ async def get_users_inside_square(
 
 
 async def save_user_query(
-    conn: aiopg_conn.SAConnection,
-    username: str,
-    x: float,
-    y: float
+    conn: aiopg_conn.SAConnection, username: str, user_coordinates: Coordinates
 ) -> None:
-    stmt = UserTable.insert().values(name=username, x=x, y=y)
+    stmt = UserTable.insert().values(name=username, x=user_coordinates.x, y=user_coordinates.y)
     await conn.execute(stmt)
 
 
 async def delete_user_query(
-    conn: aiopg_conn.SAConnection,
-    user_id: int
+    conn: aiopg_conn.SAConnection, user_id: int
 ) -> None:
     stmt = UserTable.delete().where(UserTable.c.id == user_id)
     await conn.execute(stmt)
 
 
 async def check_user_duplicate_coordinates(
-    conn: aiopg_conn.SAConnection,
-    x: float,
-    y: float
+    conn: aiopg_conn.SAConnection, user_coordinates: Coordinates
 ) -> bool:
-    stmt = sa.select([sa.exists().where(sa.and_(UserTable.c.x == x, UserTable.c.y == y))])
-
+    stmt = sa.select(
+        [sa.exists().where(sa.and_(UserTable.c.x == user_coordinates.x, UserTable.c.y == user_coordinates.y))]
+    )
     result = await conn.execute(stmt)
     re_fetchone = await result.fetchone()
 
@@ -95,7 +100,6 @@ async def check_user_duplicate_username(
     username: str,
 ) -> bool:
     stmt = sa.select([sa.exists().where(UserTable.c.name == username)])
-
     result = await conn.execute(stmt)
     re_fetchone = await result.fetchone()
 
@@ -107,7 +111,6 @@ async def user_exists_query(
     user_id: int,
 ) -> bool:
     stmt = sa.select([sa.exists().where(UserTable.c.id == user_id)])
-
     result = await conn.execute(stmt)
     re_fetchone = await result.fetchone()
 

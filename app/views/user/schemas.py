@@ -7,11 +7,11 @@ class UserUrlParamsSchema(Schema):
 
 class SaveNewUserSchema(Schema):
     username = fields.Str(required=True, validate=validate.Length(max=128))
-    x = fields.Float(required=True)
-    y = fields.Float(required=True)
+    x = fields.Decimal(required=True)
+    y = fields.Decimal(required=True)
 
 
 class UserNeighborsSchema(Schema):
     user_id = fields.Int(required=True)
-    radius = fields.Float(required=True)
+    radius = fields.Decimal(required=True)
     limit = fields.Int(required=True)

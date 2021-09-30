@@ -3,6 +3,8 @@ FROM python:3.8-slim-buster
 WORKDIR /code
 
 ENV PYTHONPATH=/code/app
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
 COPY constraints.txt /etc
 COPY requirements.txt /etc
